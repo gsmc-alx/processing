@@ -1,11 +1,11 @@
 /*
   ////////////////////////////////////////////////////
   ////////////////////////////////////////////////////
-  
+
   A-Life
-  
+
   Alex Drinkwater 2017
-  
+
   ////////////////////////////////////////////////////
   ////////////////////////////////////////////////////
 */
@@ -16,7 +16,7 @@
 //////////////////////////////////////////////////////
 //////////////////////////////////////////////////////
 
-// Video library  
+// Video library
 import processing.video.*;
 
 // PostFX shader-chaining library
@@ -38,7 +38,7 @@ import controlP5.*;
 Capture cam;
 PGraphics camFrame;
 
-// Custom shader pass class (requires PostFX)
+// Custom shader pass classes (requires PostFX)
 PostFX fx;
 FeedbackPass feedbackPass;
 ConwayPass conwayPass;
@@ -49,10 +49,14 @@ PGraphics canvas;
 ControlP5 cp5;
 color guiColor = color(200,200,200);
 
-float brushSize;
 float feedback;
 float channelSpread;
+int channelSpreadShuffle;
 boolean runFX;
+
+void captureEvent(Capture video) {
+  video.read();
+}
 
 //////////////////////////////////////////////////////
 //////////////////////////////////////////////////////
@@ -62,69 +66,71 @@ boolean runFX;
 
 void setup() {
 
-  size(1280, 720, P2D);
-  
-  //////////////////
-  // Init Capture //
-  //////////////////
-  
-  String[] cameras = Capture.list();
-  
-  if (cameras.length == 0) {
+    size(640, 480, P3D);
+
+    //////////////////
+    // Init Capture //
+    //////////////////
+
+    String[] cameras = Capture.list();
+
+    /*if (cameras.length == 0) {
     println("There are no cameras available for capture.");
     exit();
-  } else {
+    } else {
     println("Available cameras:");
     for (int i = 0; i < cameras.length; i++) {
       println(cameras[i]);
-    }   
-    // The camera can be initialized directly using an 
+    }
+    // The camera can be initialized directly using an
     // element from the array returned by list():
     cam = new Capture(this, cameras[0]);
-    cam.start();     
-  }
-  
-  camFrame = createGraphics(width, height, P2D);
-  
-  ///////////////////////
-  // PostFX pass stuff //
-  ///////////////////////
-  
-  fx            = new PostFX(this);
-  feedbackPass  = new FeedbackPass();
-  conwayPass    = new ConwayPass();
-  
-  //////////////////
-  // Add controls //
-  //////////////////
-  
-  cp5 = new ControlP5(this);
-  cp5.addSlider("brushSize")
-    .setPosition(40, 40)
-    .setSize(100, 20)
-    .setRange(0.01, 0.05)
-    .setValue(0.025)
-    .setColorCaptionLabel(guiColor);
+    cam.start();
+    }*/
 
-  cp5.addSlider("feedback")
-    .setPosition(40, 70)
-    .setSize(100, 20)
-    .setRange(0.0, 0.90)
-    .setValue(0.80)
-    .setColorCaptionLabel(guiColor);
-  
-  cp5.addSlider("channelSpread")
-    .setPosition(40, 100)
-    .setSize(100, 20)
-    .setRange(0.00, 0.07)
-    .setValue(0.0)
-    .setColorCaptionLabel(guiColor);
-  
-   cp5.addToggle("runFX")
-     .setPosition(40, 130)
-     .setSize(20, 20)
-     .setColorCaptionLabel(guiColor)
-     .setValue(false);
+    cam = new Capture(this, 640, 480);
+    cam.start();
+    camFrame = createGraphics(640, 480, P3D);
+
+    ///////////////////////
+    // PostFX pass stuff //
+    ///////////////////////
+
+    fx            = new PostFX(this);
+    feedbackPass  = new FeedbackPass();
+    conwayPass    = new ConwayPass();
+
+    //////////////////
+    // Add controls //
+    //////////////////
+
+    cp5 = new ControlP5(this);
+    cp5.addSlider("feedback")
+        .setPosition(40, 70)
+        .setSize(100, 20)
+        .setRange(0.0, 1.0)
+        .setValue(0.0)
+        .setColorCaptionLabel(guiColor);
+
+    cp5.addSlider("channelSpread")
+        .setPosition(40, 100)
+        .setSize(100, 20)
+        .setRange(0.0, 1.0)
+        .setValue(0.0)
+        .setColorCaptionLabel(guiColor);
+
+    cp5.addSlider("channelSpreadShuffle")
+        .setPosition(40, 130)
+        .setSize(100, 20)
+        .setRange(0, 5)
+        .setValue(0.0)
+        .setColorCaptionLabel(guiColor);
+
+    cp5.addToggle("runFX")
+        .setPosition(40, 160)
+        .setSize(20, 20)
+        .setColorCaptionLabel(guiColor)
+        .setValue(false);
 }
 
 //////////////////////////////////////////////////////
@@ -134,33 +140,37 @@ void setup() {
 //////////////////////////////////////////////////////
 
 void draw() {
-  
-  // Set feedback level for feedback pass shader
-  feedbackPass.setFeedback(feedback);
-  feedbackPass.setChannelSpread(channelSpread);
-  
-  conwayPass.setStartFX(runFX);
-  conwayPass.setMouse(map(mouseX, 0, width, 0, 1), map(mouseY, 0, height, 1, 0));
-  conwayPass.setBrushSize(brushSize);
-  
-  if (cam.available() == true) {
-    cam.read();
-  }
-  
-  // Copy capture pixels to PGraphics instance
-  cam.loadPixels();
-  camFrame.loadPixels();
-  arrayCopy(cam.pixels, camFrame.pixels);
-  cam.updatePixels();
-  camFrame.updatePixels();
-  
-  image(camFrame, 0, 0);
 
-  // Apply passes
-  blendMode(BLEND);
-  fx.render()
-    .custom(conwayPass)
-    .custom(feedbackPass)
-    //.bloom(0.5, 20, 40)
-    .compose();
+    updateUniforms();
+
+    if (cam.available() == true) {
+        cam.read();
+    }
+
+    // Copy capture pixels to PGraphics instance
+    cam.loadPixels();
+    camFrame.loadPixels();
+    arrayCopy(cam.pixels, camFrame.pixels);
+    cam.updatePixels();
+    camFrame.updatePixels();
+
+    image(camFrame, 0, 0);
+
+    // Apply passes
+    blendMode(BLEND);
+    fx.render()
+        .custom(conwayPass)
+        .custom(feedbackPass)
+        //.bloom(0.5, 20, 40)
+        .compose();
+}
+
+void updateUniforms() {
+    // Set uniforms for Conway pass shader
+    conwayPass.setStartFX(runFX);
+
+    // Set uniforms for feedback pass shader
+    feedbackPass.setFeedback(feedback);
+    feedbackPass.setChannelSpread(channelSpread);
+    feedbackPass.setChannelSpreadShuffle(channelSpreadShuffle);
 }
