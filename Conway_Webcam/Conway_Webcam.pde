@@ -49,9 +49,9 @@ PGraphics canvas;
 ControlP5 cp5;
 color guiColor = color(200,200,200);
 
-float feedback;
-float channelSpread;
-int channelSpreadShuffle;
+float feedbackLevel;
+float feedbackSpread;
+int feedbackColour;
 boolean runFX;
 
 void captureEvent(Capture video) {
@@ -96,6 +96,7 @@ void setup() {
     // PostFX pass stuff //
     ///////////////////////
 
+    // Init class instances of PostFX + custom PostFX pass classes
     fx            = new PostFX(this);
     feedbackPass  = new FeedbackPass();
     conwayPass    = new ConwayPass();
@@ -105,30 +106,34 @@ void setup() {
     //////////////////
 
     cp5 = new ControlP5(this);
-    cp5.addSlider("feedback")
+    cp5.addSlider("feedbackLevel")
         .setPosition(40, 70)
         .setSize(100, 20)
         .setRange(0.0, 1.0)
-        .setValue(0.0)
+        .setValue(0.8)
+        .setLabel("Feedback Amount")
         .setColorCaptionLabel(guiColor);
 
-    cp5.addSlider("channelSpread")
+    cp5.addSlider("feedbackSpread")
         .setPosition(40, 100)
         .setSize(100, 20)
         .setRange(0.0, 1.0)
-        .setValue(0.0)
+        .setValue(1.0)
+        .setLabel("Feedback Colour-Spread")
         .setColorCaptionLabel(guiColor);
 
-    cp5.addSlider("channelSpreadShuffle")
+    cp5.addSlider("feedbackColour")
         .setPosition(40, 130)
         .setSize(100, 20)
         .setRange(0, 5)
         .setValue(0.0)
+        .setLabel("Feedback Colour Method")
         .setColorCaptionLabel(guiColor);
 
     cp5.addToggle("runFX")
         .setPosition(40, 160)
         .setSize(20, 20)
+        .setLabel("Run A-Life")
         .setColorCaptionLabel(guiColor)
         .setValue(false);
 }
@@ -141,8 +146,10 @@ void setup() {
 
 void draw() {
 
+    // Update shader uniforms
     updateUniforms();
 
+    // Draw capture to canvas
     if (cam.available() == true) {
         cam.read();
     }
@@ -165,12 +172,19 @@ void draw() {
         .compose();
 }
 
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+// FUNCTIONS /////////////////////////////////////////
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+
 void updateUniforms() {
-    // Set uniforms for Conway pass shader
+
+    // Set uniforms for shader Conway pass
     conwayPass.setStartFX(runFX);
 
-    // Set uniforms for feedback pass shader
-    feedbackPass.setFeedback(feedback);
-    feedbackPass.setChannelSpread(channelSpread);
-    feedbackPass.setChannelSpreadShuffle(channelSpreadShuffle);
+    // Set uniforms for feedback shader pass
+    feedbackPass.setFeedback(feedbackLevel);
+    feedbackPass.setFeedbackSpread(feedbackSpread);
+    feedbackPass.setFeedbackColour(feedbackColour);
 }

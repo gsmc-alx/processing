@@ -30,14 +30,15 @@ class ConwayPass implements Pass
     }
 
     @Override
-        public void prepare(Supervisor supervisor) {
+    public void prepare(Supervisor supervisor)
+    {
             shader.set("previoustexture", this.previousTexture);
-            shader.set("brushsize", this.brushSize);
             shader.set("run", runFX);
     }
 
     @Override
-        public void apply(Supervisor supervisor) {
+    public void apply(Supervisor supervisor)
+    {
         PGraphics pass = supervisor.getNextPass();
         supervisor.clearPass(pass);
 
@@ -62,7 +63,8 @@ class ConwayPass implements Pass
     /////////////////////
 
     //
-    public void setStartFX(boolean run) {
+    public void setStartFX(boolean run)
+    {
         runFX = run;
     }
 
@@ -73,25 +75,11 @@ class ConwayPass implements Pass
     )
     {
         // Alive rules
-        this.a0 = a0;
-        this.a1 = a1;
-        this.a2 = a2;
-        this.a3 = a3;
-        this.a4 = a4;
-        this.a5 = a5;
-        this.a6 = a6;
-        this.a7 = a7;
-        this.a8 = a8;
+        this.a0 = a0; this.a1 = a1; this.a2 = a2; this.a3 = a3; this.a4 = a4;
+        this.a5 = a5; this.a6 = a6; this.a7 = a7; this.a8 = a8;
 
         // Dead rules
-        this.d0 = d0;
-        this.d1 = d1;
-        this.d2 = d2;
-        this.d3 = d3;
-        this.d4 = d4;
-        this.d5 = d5;
-        this.d6 = d6;
-        this.d7 = d7;
-        this.d8 = d8;
+        this.d0 = d0; this.d1 = d1; this.d2 = d2; this.d3 = d3; this.d4 = d4;
+        this.d5 = d5; this.d6 = d6; this.d7 = d7; this.d8 = d8;
     }
 }

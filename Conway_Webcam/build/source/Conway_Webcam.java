@@ -71,10 +71,9 @@ PGraphics canvas;
 ControlP5 cp5;
 int guiColor = color(200,200,200);
 
-float brushSize;
-float feedback;
-float channelSpread;
-int channelSpreadShuffle;
+float feedbackLevel;
+float feedbackSpread;
+int feedbackColour;
 boolean runFX;
 
 public void captureEvent(Capture video) {
@@ -128,30 +127,34 @@ public void setup() {
     //////////////////
 
     cp5 = new ControlP5(this);
-    cp5.addSlider("feedback")
+    cp5.addSlider("feedbackLevel")
         .setPosition(40, 70)
         .setSize(100, 20)
         .setRange(0.0f, 1.0f)
-        .setValue(0.0f)
+        .setValue(0.8f)
+        .setLabel("Feedback Amount")
         .setColorCaptionLabel(guiColor);
 
-    cp5.addSlider("channelSpread")
+    cp5.addSlider("feedbackSpread")
         .setPosition(40, 100)
         .setSize(100, 20)
         .setRange(0.0f, 1.0f)
-        .setValue(0.0f)
+        .setValue(1.0f)
+        .setLabel("Feedback Colour-Spread")
         .setColorCaptionLabel(guiColor);
 
-    cp5.addSlider("channelSpreadShuffle")
+    cp5.addSlider("feedbackColour")
         .setPosition(40, 130)
         .setSize(100, 20)
         .setRange(0, 5)
         .setValue(0.0f)
+        .setLabel("Feedback Colour Method")
         .setColorCaptionLabel(guiColor);
 
     cp5.addToggle("runFX")
         .setPosition(40, 160)
         .setSize(20, 20)
+        .setLabel("Run A-Life")
         .setColorCaptionLabel(guiColor)
         .setValue(false);
 }
@@ -164,8 +167,10 @@ public void setup() {
 
 public void draw() {
 
+    // Update shader uniforms
     updateUniforms();
 
+    // Draw capture to canvas
     if (cam.available() == true) {
         cam.read();
     }
@@ -188,14 +193,21 @@ public void draw() {
         .compose();
 }
 
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+// FUNCTIONS /////////////////////////////////////////
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+
 public void updateUniforms() {
-    // Set uniforms for Conway pass shader
+
+    // Set uniforms for shader Conway pass
     conwayPass.setStartFX(runFX);
 
-    // Set uniforms for feedback pass shader
-    feedbackPass.setFeedback(feedback);
-    feedbackPass.setChannelSpread(channelSpread);
-    feedbackPass.setChannelSpreadShuffle(channelSpreadShuffle);
+    // Set uniforms for feedback shader pass
+    feedbackPass.setFeedback(feedbackLevel);
+    feedbackPass.setFeedbackSpread(feedbackSpread);
+    feedbackPass.setFeedbackColour(feedbackColour);
 }
 /*
   ////////////////////////////////////////
@@ -229,14 +241,15 @@ class ConwayPass implements Pass
     }
 
     @Override
-        public void prepare(Supervisor supervisor) {
+    public void prepare(Supervisor supervisor)
+    {
             shader.set("previoustexture", this.previousTexture);
-            shader.set("brushsize", this.brushSize);
             shader.set("run", runFX);
     }
 
     @Override
-        public void apply(Supervisor supervisor) {
+    public void apply(Supervisor supervisor)
+    {
         PGraphics pass = supervisor.getNextPass();
         supervisor.clearPass(pass);
 
@@ -261,7 +274,8 @@ class ConwayPass implements Pass
     /////////////////////
 
     //
-    public void setStartFX(boolean run) {
+    public void setStartFX(boolean run)
+    {
         runFX = run;
     }
 
@@ -272,26 +286,12 @@ class ConwayPass implements Pass
     )
     {
         // Alive rules
-        this.a0 = a0;
-        this.a1 = a1;
-        this.a2 = a2;
-        this.a3 = a3;
-        this.a4 = a4;
-        this.a5 = a5;
-        this.a6 = a6;
-        this.a7 = a7;
-        this.a8 = a8;
+        this.a0 = a0; this.a1 = a1; this.a2 = a2; this.a3 = a3; this.a4 = a4;
+        this.a5 = a5; this.a6 = a6; this.a7 = a7; this.a8 = a8;
 
         // Dead rules
-        this.d0 = d0;
-        this.d1 = d1;
-        this.d2 = d2;
-        this.d3 = d3;
-        this.d4 = d4;
-        this.d5 = d5;
-        this.d6 = d6;
-        this.d7 = d7;
-        this.d8 = d8;
+        this.d0 = d0; this.d1 = d1; this.d2 = d2; this.d3 = d3; this.d4 = d4;
+        this.d5 = d5; this.d6 = d6; this.d7 = d7; this.d8 = d8;
     }
 }
 /*
@@ -308,11 +308,12 @@ class FeedbackPass implements Pass
     private PShader shader;
 
     // Shader uniforms
-    private float feedbackLevel;          // Feedback amount
-    private float channelSpread;          // Offset feedback amount for RGB channels
-    private int channelSpreadShuffle;     // Shuffle channels feedback mix level
+    private float feedbackLevel;                    // Global feedback mix level
+    private float[] feedbackMixVals = {0,0,0,0};    // RGBA feedback mix levels (array must be initialised)
+    private float channelSpread;                    // Offset feedback amount for RGB channels
+    private int channelSpreadShuffle;               // Shuffle channels feedback mix level
 
-    private PGraphics previousTexture;    // Previous frame texture
+    private PGraphics previousTexture;              // Previous frame texture
 
     /////////////////
     // Constructor //
@@ -325,17 +326,21 @@ class FeedbackPass implements Pass
     }
 
     @Override
-        public void prepare(Supervisor supervisor) {
+    public void prepare(Supervisor supervisor)
+    {
         shader.set("previoustexture", this.previousTexture);
     }
 
     @Override
-        public void apply(Supervisor supervisor) {
+    public void apply(Supervisor supervisor)
+    {
         PGraphics pass = supervisor.getNextPass();
         supervisor.clearPass(pass);
 
-        updateUniforms();
+        // Update shader uniforms
+        this.updateUniforms();
 
+        // Begin drawing
         pass.beginDraw();
         pass.shader(shader);
         pass.image(supervisor.getCurrentPass(), 0, 0);
@@ -346,30 +351,22 @@ class FeedbackPass implements Pass
         pass.loadPixels();
         previousTexture.loadPixels();
         arrayCopy(pass.pixels, previousTexture.pixels);
-        pass.updatePixels();
+        //pass.updatePixels();
         previousTexture.updatePixels();
     }
 
+    ////////////////////////////
+    // Update shader uniforms //
+    ////////////////////////////
+
     private void updateUniforms()
     {
-        // Send updated shader uniforms
-        float cs0 = this.feedbackLevel + this.channelSpread;
-        float cs1 = this.feedbackLevel;
-        float cs2 = this.feedbackLevel - this.channelSpread;
-        float[][] feedbackMixVals = {
-            {cs0, cs1, cs2, cs1},
-            {cs0, cs2, cs1, cs1},
-            {cs1, cs0, cs2, cs1},
-            {cs1, cs2, cs0, cs1},
-            {cs2, cs0, cs1, cs1},
-            {cs2, cs1, cs0, cs1}
-        };
         shader.set(
             "feedback",
-            feedbackMixVals[this.channelSpreadShuffle][0],
-            feedbackMixVals[this.channelSpreadShuffle][1],
-            feedbackMixVals[this.channelSpreadShuffle][2],
-            feedbackMixVals[this.channelSpreadShuffle][3]
+            this.feedbackMixVals[0],
+            this.feedbackMixVals[1],
+            this.feedbackMixVals[2],
+            this.feedbackMixVals[3]
         );
     }
 
@@ -377,19 +374,39 @@ class FeedbackPass implements Pass
     // Mutator methods //
     /////////////////////
 
-    public void setFeedback(float feedback)
+    public void setFeedback(float val)
     {
         // Input in 0 > 1 range
-        this.feedbackLevel = 0.9f * pow(max(min(feedback,1.0f), 0.0f), 0.2f);
+        // Scaled to 0 > 0.9, with 'pow(val, 0.2)' curve for more resolution at upper end of range
+        this.feedbackLevel = 0.9f * pow(max(min(val,1.0f), 0.0f), 0.2f);
+
+        // Add feedback level offsets to RGB channels
+        // Array containing 6 possible permutations of +/- offsets
+        float cs0 = this.feedbackLevel + this.channelSpread;
+        float cs1 = this.feedbackLevel;
+        float cs2 = this.feedbackLevel - this.channelSpread;
+        float[][] valCombinations = {
+            {cs0, cs1, cs2, cs1},
+            {cs0, cs2, cs1, cs1},
+            {cs1, cs0, cs2, cs1},
+            {cs1, cs2, cs0, cs1},
+            {cs2, cs0, cs1, cs1},
+            {cs2, cs1, cs0, cs1}
+        };
+        // Update RGBA mix levels array
+        this.feedbackMixVals[0] = valCombinations[this.channelSpreadShuffle][0];
+        this.feedbackMixVals[1] = valCombinations[this.channelSpreadShuffle][1];
+        this.feedbackMixVals[2] = valCombinations[this.channelSpreadShuffle][2];
+        this.feedbackMixVals[3] = valCombinations[this.channelSpreadShuffle][3];
     }
 
-    public void setChannelSpread(float spread)
+    public void setFeedbackSpread(float val)
     {
         // Input in 0 > 1 range
-        this.channelSpread = 0.07f * max(min(feedback,1.0f), 0.0f);
+        this.channelSpread = 0.07f * max(min(val,1.0f), 0.0f);
     }
 
-    public void setChannelSpreadShuffle(int index)
+    public void setFeedbackColour(int index)
     {
         // Range 0 > 5
         this.channelSpreadShuffle = min(index, 5);
