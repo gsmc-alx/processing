@@ -4,7 +4,6 @@
 precision highp float;
 #endif
 
-uniform float time;
 uniform vec2 resolution;
 uniform bool run;
 uniform sampler2D texture;			// Live input texture
@@ -17,11 +16,6 @@ vec4 live = vec4(1.0, 1.0, 1.0, 1.0);
 vec4 dead = vec4(0.0, 0.0, 0.0, 1.0);
 
 vec2 pixel = 1.0 / resolution;
-
-// Random function
-float rand(vec2 pos) {
-	return mod(fract(sin(dot(pos + time * 0.001, vec2(14.9898,78.233))) * 43758.5453), 1.0);
-}
 
 // Texture-read (with offset) function
 float val(vec2 pos, vec2 offset) {

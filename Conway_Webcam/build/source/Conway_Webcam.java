@@ -69,7 +69,13 @@ PGraphics canvas;
 
 // GUI library
 ControlP5 cp5;
-int guiColor = color(200,200,200);
+/* https://forum.processing.org/one/topic/how-to-change-slider-colors-in-controlp5.html
+color guiFGColor        = color(154, 154, 154);
+color guiBGColor        = color(97, 97, 97);
+color guiActiveColor    = color(255, 255, 255);*/
+int guiLabelColor     = color(200,200,200);
+int controlsTop         = 20;
+int controlsLeft        = 20;
 
 float feedbackLevel;
 float feedbackSpread;
@@ -118,6 +124,7 @@ public void setup() {
     // PostFX pass stuff //
     ///////////////////////
 
+    // Init class instances of PostFX + custom PostFX pass classes
     fx            = new PostFX(this);
     feedbackPass  = new FeedbackPass();
     conwayPass    = new ConwayPass();
@@ -128,34 +135,34 @@ public void setup() {
 
     cp5 = new ControlP5(this);
     cp5.addSlider("feedbackLevel")
-        .setPosition(40, 70)
+        .setPosition(controlsLeft, controlsTop)
         .setSize(100, 20)
         .setRange(0.0f, 1.0f)
         .setValue(0.8f)
         .setLabel("Feedback Amount")
-        .setColorCaptionLabel(guiColor);
+        .setColorCaptionLabel(guiLabelColor);
 
     cp5.addSlider("feedbackSpread")
-        .setPosition(40, 100)
+        .setPosition(controlsLeft, controlsTop + 30)
         .setSize(100, 20)
         .setRange(0.0f, 1.0f)
         .setValue(1.0f)
         .setLabel("Feedback Colour-Spread")
-        .setColorCaptionLabel(guiColor);
+        .setColorCaptionLabel(guiLabelColor);
 
     cp5.addSlider("feedbackColour")
-        .setPosition(40, 130)
+        .setPosition(controlsLeft, controlsTop + 60)
         .setSize(100, 20)
         .setRange(0, 5)
         .setValue(0.0f)
         .setLabel("Feedback Colour Method")
-        .setColorCaptionLabel(guiColor);
+        .setColorCaptionLabel(guiLabelColor);
 
     cp5.addToggle("runFX")
-        .setPosition(40, 160)
+        .setPosition(controlsLeft, controlsTop + 90)
         .setSize(20, 20)
         .setLabel("Run A-Life")
-        .setColorCaptionLabel(guiColor)
+        .setColorCaptionLabel(guiLabelColor)
         .setValue(false);
 }
 
@@ -191,6 +198,9 @@ public void draw() {
         .custom(feedbackPass)
         //.bloom(0.5, 20, 40)
         .compose();
+
+    fill(guiLabelColor);
+    text("fps: " + frameRate, controlsLeft, 460);
 }
 
 //////////////////////////////////////////////////////
@@ -412,7 +422,7 @@ class FeedbackPass implements Pass
         this.channelSpreadShuffle = min(index, 5);
     }
 }
-  public void settings() {  size(640, 480, P3D); }
+  public void settings() {  size(640, 480, OPENGL); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "Conway_Webcam" };
     if (passedArgs != null) {

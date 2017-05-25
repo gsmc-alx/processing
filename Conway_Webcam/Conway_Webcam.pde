@@ -47,7 +47,13 @@ PGraphics canvas;
 
 // GUI library
 ControlP5 cp5;
-color guiColor = color(200,200,200);
+/* https://forum.processing.org/one/topic/how-to-change-slider-colors-in-controlp5.html
+color guiFGColor        = color(154, 154, 154);
+color guiBGColor        = color(97, 97, 97);
+color guiActiveColor    = color(255, 255, 255);*/
+color guiLabelColor     = color(200,200,200);
+int controlsTop         = 20;
+int controlsLeft        = 20;
 
 float feedbackLevel;
 float feedbackSpread;
@@ -66,7 +72,7 @@ void captureEvent(Capture video) {
 
 void setup() {
 
-    size(640, 480, P3D);
+    size(640, 480, OPENGL);
 
     //////////////////
     // Init Capture //
@@ -107,34 +113,34 @@ void setup() {
 
     cp5 = new ControlP5(this);
     cp5.addSlider("feedbackLevel")
-        .setPosition(40, 70)
+        .setPosition(controlsLeft, controlsTop)
         .setSize(100, 20)
         .setRange(0.0, 1.0)
         .setValue(0.8)
         .setLabel("Feedback Amount")
-        .setColorCaptionLabel(guiColor);
+        .setColorCaptionLabel(guiLabelColor);
 
     cp5.addSlider("feedbackSpread")
-        .setPosition(40, 100)
+        .setPosition(controlsLeft, controlsTop + 30)
         .setSize(100, 20)
         .setRange(0.0, 1.0)
         .setValue(1.0)
         .setLabel("Feedback Colour-Spread")
-        .setColorCaptionLabel(guiColor);
+        .setColorCaptionLabel(guiLabelColor);
 
     cp5.addSlider("feedbackColour")
-        .setPosition(40, 130)
+        .setPosition(controlsLeft, controlsTop + 60)
         .setSize(100, 20)
         .setRange(0, 5)
         .setValue(0.0)
         .setLabel("Feedback Colour Method")
-        .setColorCaptionLabel(guiColor);
+        .setColorCaptionLabel(guiLabelColor);
 
     cp5.addToggle("runFX")
-        .setPosition(40, 160)
+        .setPosition(controlsLeft, controlsTop + 90)
         .setSize(20, 20)
         .setLabel("Run A-Life")
-        .setColorCaptionLabel(guiColor)
+        .setColorCaptionLabel(guiLabelColor)
         .setValue(false);
 }
 
@@ -170,6 +176,9 @@ void draw() {
         .custom(feedbackPass)
         //.bloom(0.5, 20, 40)
         .compose();
+
+    fill(guiLabelColor);
+    text("fps: " + frameRate, controlsLeft, 460);
 }
 
 //////////////////////////////////////////////////////
