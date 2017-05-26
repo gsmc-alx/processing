@@ -1,3 +1,86 @@
+import processing.core.*; 
+import processing.data.*; 
+import processing.event.*; 
+import processing.opengl.*; 
+
+import processing.video.*; 
+import controlP5.*; 
+import java.nio.ByteBuffer; 
+import java.nio.ByteOrder; 
+import java.nio.FloatBuffer; 
+import java.nio.IntBuffer; 
+import com.jogamp.opengl.GL; 
+import com.jogamp.opengl.GL2ES2; 
+
+import java.util.HashMap; 
+import java.util.ArrayList; 
+import java.io.File; 
+import java.io.BufferedReader; 
+import java.io.PrintWriter; 
+import java.io.InputStream; 
+import java.io.OutputStream; 
+import java.io.IOException; 
+
+public class VBO_Test extends PApplet {
+
+// Video library
+
+
+// ControlP5 GUI library
+// https://github.com/sojamo/controlp5
+
+
+Capture cam;
+PGraphics camFrame;
+
+VBOGrid vboGrid;
+
+ControlP5 cp5;
+
+float extrude;
+
+public void setup() {
+    
+
+    cam = new Capture(this, 640, 480);
+    cam.start();
+    camFrame = createGraphics(640, 480, P3D);
+
+    vboGrid = new VBOGrid(100, 100, 640, 480, "POINTS", "customFrag.glsl", "customVert.glsl");
+    vboGrid.setShaderUniformBoolean("flipY", true);
+    vboGrid.setShaderUniformTexture("fragtex", camFrame);
+    vboGrid.setShaderUniformTexture("verttex", camFrame);
+
+    cp5 = new ControlP5(this);
+    cp5.addSlider("extrude")
+        .setPosition(550, 0)
+        .setSize(100, 20)
+        .setRange(0.0f, 400.0f)
+        .setValue(200.0f)
+        .setLabel("Z-Extrude Amount");
+}
+
+public void draw() {
+    background(0);
+
+    // Draw capture to canvas
+    if (cam.available() == true) {
+        cam.read();
+    }
+
+    // Copy capture pixels to PGraphics instance
+    cam.loadPixels();
+    camFrame.loadPixels();
+    arrayCopy(cam.pixels, camFrame.pixels);
+    cam.updatePixels();
+    camFrame.updatePixels();
+
+    //image(cam, 0, 0);
+
+    vboGrid.setShaderUniformFloat("extrude", extrude);
+
+    vboGrid.draw();
+}
 /*
     //////////////////////////////////////////////////
 
@@ -17,13 +100,13 @@
 //////////////////////////////////////////////////////
 //////////////////////////////////////////////////////
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
-import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL2ES2;
+
+
+
+
+
+
 
 //////////////////////////////////////////////////////
 //////////////////////////////////////////////////////
@@ -141,7 +224,7 @@ class VBOGrid
     //////////////////////////////////////////////////
     //////////////////////////////////////////////////
 
-    void draw() {
+    public void draw() {
 
         // Geometry transformations from Processing are automatically passed to the shader
         // as long as the uniforms in the shader have the right names.
@@ -214,7 +297,7 @@ class VBOGrid
     //////////////////////////////////////////////////
     //////////////////////////////////////////////////
 
-    void updateGeometry() {
+    public void updateGeometry() {
 
         // Loop-counters
         int i = 0;
@@ -228,8 +311,8 @@ class VBOGrid
             {
 
                  // Vertex positions
-                positions[i    ] = ((pxWidth / vertsX) * x) - (0.5 * pxWidth);
-                positions[i + 1] = ((pxHeight / vertsY) * y) - (0.5 * pxHeight);
+                positions[i    ] = ((pxWidth / vertsX) * x) - (0.5f * pxWidth);
+                positions[i + 1] = ((pxHeight / vertsY) * y) - (0.5f * pxHeight);
                 positions[i + 2] = 0;
                 positions[i + 3] = 1;
 
@@ -322,12 +405,12 @@ class VBOGrid
     // Allocate buffers //
     //////////////////////
 
-    FloatBuffer allocateDirectFloatBuffer(int n)
+    public FloatBuffer allocateDirectFloatBuffer(int n)
     {
       return ByteBuffer.allocateDirect(n * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
     }
 
-    IntBuffer allocateDirectIntBuffer(int n)
+    public IntBuffer allocateDirectIntBuffer(int n)
     {
       return ByteBuffer.allocateDirect(n * Integer.BYTES).order(ByteOrder.nativeOrder()).asIntBuffer();
     }
@@ -336,20 +419,30 @@ class VBOGrid
     // Set shader uniforms //
     /////////////////////////
 
-    void setShaderUniformInt(String name, int val) {
+    public void setShaderUniformInt(String name, int val) {
         shader.set(name, val);
     }
 
-    void setShaderUniformFloat(String name, float val) {
+    public void setShaderUniformFloat(String name, float val) {
         shader.set(name, val);
     }
 
-    void setShaderUniformBoolean(String name, Boolean val) {
+    public void setShaderUniformBoolean(String name, Boolean val) {
         shader.set(name, val);
     }
 
 
-    void setShaderUniformTexture(String name, PGraphics tex) {
+    public void setShaderUniformTexture(String name, PGraphics tex) {
         shader.set(name, tex);
     }
+}
+  public void settings() {  size(800, 600, P3D); }
+  static public void main(String[] passedArgs) {
+    String[] appletArgs = new String[] { "VBO_Test" };
+    if (passedArgs != null) {
+      PApplet.main(concat(appletArgs, passedArgs));
+    } else {
+      PApplet.main(appletArgs);
+    }
+  }
 }
