@@ -175,6 +175,10 @@ class VBOGrid
         gl.glBindBuffer(PGL.ELEMENT_ARRAY_BUFFER, indexVboId);
         pgl.bufferData(PGL.ELEMENT_ARRAY_BUFFER, Integer.BYTES * indices.length, indexBuffer, GL.GL_DYNAMIC_DRAW);
 
+        background(0);
+
+        blendMode(BLEND);
+
         switch (drawMode) {
             case "POINTS" :
 
@@ -197,7 +201,6 @@ class VBOGrid
                  gl.glDrawElements(PGL.POINTS, indices.length, GL.GL_UNSIGNED_INT, 0);
         }
 
-
         gl.glBindBuffer(PGL.ELEMENT_ARRAY_BUFFER, 0);
 
         gl.glDisableVertexAttribArray(posLoc);
@@ -206,6 +209,8 @@ class VBOGrid
         shader.unbind();
 
         endPGL();
+
+        translate(-width/2, -height/2);
     }
 
     //////////////////////////////////////////////////

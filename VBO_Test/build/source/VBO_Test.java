@@ -4,6 +4,9 @@ import processing.event.*;
 import processing.opengl.*; 
 
 import processing.video.*; 
+import peasy.*; 
+import peasy.org.apache.commons.math.*; 
+import peasy.org.apache.commons.math.geometry.*; 
 import controlP5.*; 
 import java.nio.ByteBuffer; 
 import java.nio.ByteOrder; 
@@ -26,6 +29,11 @@ public class VBO_Test extends PApplet {
 // Video library
 
 
+//Peasycam
+
+
+
+
 // ControlP5 GUI library
 // https://github.com/sojamo/controlp5
 
@@ -37,6 +45,10 @@ VBOGrid vboGrid;
 
 ControlP5 cp5;
 
+PeasyCam pcam;
+
+PGraphics canvas;
+
 float extrude;
 
 public void setup() {
@@ -46,18 +58,24 @@ public void setup() {
     cam.start();
     camFrame = createGraphics(640, 480, P3D);
 
-    vboGrid = new VBOGrid(100, 100, 640, 480, "POINTS", "customFrag.glsl", "customVert.glsl");
+    canvas = createGraphics(width, height, P3D);
+
+    vboGrid = new VBOGrid(400, 300, 800, 600, "POINTS", "customFrag.glsl", "customVert.glsl");
     vboGrid.setShaderUniformBoolean("flipY", true);
     vboGrid.setShaderUniformTexture("fragtex", camFrame);
     vboGrid.setShaderUniformTexture("verttex", camFrame);
 
     cp5 = new ControlP5(this);
     cp5.addSlider("extrude")
-        .setPosition(550, 0)
+        .setPosition(20, 20)
         .setSize(100, 20)
-        .setRange(0.0f, 400.0f)
-        .setValue(200.0f)
+        .setRange(0.0f, 800.0f)
+        .setValue(300.0f)
         .setLabel("Z-Extrude Amount");
+
+    /*pcam = new PeasyCam(this, 500);
+    pcam.setMinimumDistance(50);
+    pcam.setMaximumDistance(500);*/
 }
 
 public void draw() {
@@ -74,8 +92,6 @@ public void draw() {
     arrayCopy(cam.pixels, camFrame.pixels);
     cam.updatePixels();
     camFrame.updatePixels();
-
-    //image(cam, 0, 0);
 
     vboGrid.setShaderUniformFloat("extrude", extrude);
 
@@ -258,6 +274,10 @@ class VBOGrid
         gl.glBindBuffer(PGL.ELEMENT_ARRAY_BUFFER, indexVboId);
         pgl.bufferData(PGL.ELEMENT_ARRAY_BUFFER, Integer.BYTES * indices.length, indexBuffer, GL.GL_DYNAMIC_DRAW);
 
+        background(0);
+
+        blendMode(BLEND);
+
         switch (drawMode) {
             case "POINTS" :
 
@@ -280,7 +300,6 @@ class VBOGrid
                  gl.glDrawElements(PGL.POINTS, indices.length, GL.GL_UNSIGNED_INT, 0);
         }
 
-
         gl.glBindBuffer(PGL.ELEMENT_ARRAY_BUFFER, 0);
 
         gl.glDisableVertexAttribArray(posLoc);
@@ -289,6 +308,8 @@ class VBOGrid
         shader.unbind();
 
         endPGL();
+
+        translate(-width/2, -height/2);
     }
 
     //////////////////////////////////////////////////

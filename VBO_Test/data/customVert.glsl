@@ -20,7 +20,7 @@ void main() {
 
     vertTexCoord = (flipY == true) ? vec4(texCoord.s, 1.0 - texCoord.t, 0.0, 1.0) : vec4(texCoord.st, 0.0, 1.0);
 
-    vec4 color = texture(verttex, texCoord.st);
+    vec4 color = texture(verttex, vertTexCoord.st);
 
     vec4 vertColor = color;
     vec4 newvpos = vec4(position.xy, color.r * extrude, 1.0);
