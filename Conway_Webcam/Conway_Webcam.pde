@@ -72,6 +72,7 @@ void captureEvent(Capture video) {
 
 void setup() {
 
+<<<<<<< Updated upstream
     size(640, 480, OPENGL);
 
     //////////////////
@@ -81,6 +82,17 @@ void setup() {
     String[] cameras = Capture.list();
 
     /*if (cameras.length == 0) {
+=======
+  size(1280, 720, P2D);
+
+  //////////////////
+  // Init Capture //
+  //////////////////
+
+  String[] cameras = Capture.list();
+
+  if (cameras.length == 0) {
+>>>>>>> Stashed changes
     println("There are no cameras available for capture.");
     exit();
     } else {
@@ -92,6 +104,7 @@ void setup() {
     // element from the array returned by list():
     cam = new Capture(this, cameras[0]);
     cam.start();
+<<<<<<< Updated upstream
     }*/
 
     cam = new Capture(this, 640, 480);
@@ -142,6 +155,51 @@ void setup() {
         .setLabel("Run A-Life")
         .setColorCaptionLabel(guiLabelColor)
         .setValue(false);
+=======
+  }
+
+  camFrame = createGraphics(width, height, P2D);
+
+  ///////////////////////
+  // PostFX pass stuff //
+  ///////////////////////
+
+  fx            = new PostFX(this);
+  feedbackPass  = new FeedbackPass();
+  conwayPass    = new ConwayPass();
+
+  //////////////////
+  // Add controls //
+  //////////////////
+
+  cp5 = new ControlP5(this);
+  cp5.addSlider("brushSize")
+    .setPosition(40, 40)
+    .setSize(100, 20)
+    .setRange(0.01, 0.05)
+    .setValue(0.025)
+    .setColorCaptionLabel(guiColor);
+
+  cp5.addSlider("feedback")
+    .setPosition(40, 70)
+    .setSize(100, 20)
+    .setRange(0.0, 0.90)
+    .setValue(0.80)
+    .setColorCaptionLabel(guiColor);
+
+  cp5.addSlider("channelSpread")
+    .setPosition(40, 100)
+    .setSize(100, 20)
+    .setRange(0.00, 0.07)
+    .setValue(0.0)
+    .setColorCaptionLabel(guiColor);
+
+   cp5.addToggle("runFX")
+     .setPosition(40, 130)
+     .setSize(20, 20)
+     .setColorCaptionLabel(guiColor)
+     .setValue(false);
+>>>>>>> Stashed changes
 }
 
 //////////////////////////////////////////////////////
@@ -152,6 +210,7 @@ void setup() {
 
 void draw() {
 
+<<<<<<< Updated upstream
     // Update shader uniforms
     updateUniforms();
 
@@ -196,4 +255,34 @@ void updateUniforms() {
     feedbackPass.setFeedback(feedbackLevel);
     feedbackPass.setFeedbackSpread(feedbackSpread);
     feedbackPass.setFeedbackColour(feedbackColour);
+=======
+  // Set feedback level for feedback pass shader
+  feedbackPass.setFeedback(feedback);
+  feedbackPass.setChannelSpread(channelSpread);
+
+  conwayPass.setStartFX(runFX);
+  conwayPass.setMouse(map(mouseX, 0, width, 0, 1), map(mouseY, 0, height, 1, 0));
+  conwayPass.setBrushSize(brushSize);
+
+  if (cam.available() == true) {
+    cam.read();
+  }
+
+  // Copy capture pixels to PGraphics instance
+  cam.loadPixels();
+  camFrame.loadPixels();
+  arrayCopy(cam.pixels, camFrame.pixels);
+  cam.updatePixels();
+  camFrame.updatePixels();
+
+  image(camFrame, 0, 0);
+
+  // Apply passes
+  blendMode(BLEND);
+  fx.render()
+    .custom(conwayPass)
+    .custom(feedbackPass)
+    //.bloom(0.5, 20, 40)
+    .compose();
+>>>>>>> Stashed changes
 }
