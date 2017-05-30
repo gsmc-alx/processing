@@ -9,15 +9,15 @@
 
 class ConwayPass implements Pass
 {
-    private PShader shader;
+    PShader shader;
 
     // Shader uniforms
-    private PGraphics previousTexture;                 // Previous texture for feedback
-    private float brushSize;                           // Brush size
-    private float a0, a1, a2, a3, a4, a5, a6, a7, a8;  // Rules alive
-    private float d0, d1, d2, d3, d4, d5, d6, d7, d8;  // Rules dead
-    private boolean runRX;
-    private float mousex, mousey;
+    PGraphics previousTexture;                 // Previous texture for feedback
+    float brushSize;                           // Brush size
+    float a0, a1, a2, a3, a4, a5, a6, a7, a8;  // Rules alive
+    float d0, d1, d2, d3, d4, d5, d6, d7, d8;  // Rules dead
+    boolean runRX;
+    float mousex, mousey;
 
     /////////////////
     // Constructor //
@@ -51,11 +51,9 @@ class ConwayPass implements Pass
         pass.endDraw();
 
         // Update previous texture
-        pass.loadPixels();
-        previousTexture.loadPixels();
-        arrayCopy(pass.pixels, previousTexture.pixels);
-        pass.updatePixels();
-        previousTexture.updatePixels();
+        previousTexture.beginDraw();
+        previousTexture.image(pass, 0, 0);
+        previousTexture.endDraw();
     }
 
     /////////////////////

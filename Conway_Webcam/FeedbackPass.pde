@@ -9,15 +9,15 @@
 
 class FeedbackPass implements Pass
 {
-    private PShader shader;
+    PShader shader;
 
     // Shader uniforms
-    private float feedbackLevel;                    // Global feedback mix level
-    private float[] feedbackMixVals = {0,0,0,0};    // RGBA feedback mix levels (array must be initialised)
-    private float channelSpread;                    // Offset feedback amount for RGB channels
-    private int channelSpreadShuffle;               // Shuffle channels feedback mix level
+    float feedbackLevel;                    // Global feedback mix level
+    float[] feedbackMixVals = {0,0,0,0};    // RGBA feedback mix levels (array must be initialised)
+    float channelSpread;                    // Offset feedback amount for RGB channels
+    int channelSpreadShuffle;               // Shuffle channels feedback mix level
 
-    private PGraphics previousTexture;              // Previous frame texture
+    PGraphics previousTexture;              // Previous frame texture
 
     /////////////////
     // Constructor //
@@ -51,19 +51,16 @@ class FeedbackPass implements Pass
         pass.endDraw();
 
         // Update previous texture
-        // Is there a faster way to do this??
-        pass.loadPixels();
-        previousTexture.loadPixels();
-        arrayCopy(pass.pixels, previousTexture.pixels);
-        //pass.updatePixels();
-        previousTexture.updatePixels();
+        previousTexture.beginDraw();
+        previousTexture.image(pass, 0, 0);
+        previousTexture.endDraw();
     }
 
     ////////////////////////////
     // Update shader uniforms //
     ////////////////////////////
 
-    private void updateUniforms()
+    void updateUniforms()
     {
         shader.set(
             "feedback",

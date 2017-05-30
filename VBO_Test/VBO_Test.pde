@@ -1,10 +1,11 @@
 // Video library
 import processing.video.*;
 
-//Peasycam
-import peasy.*;
-import peasy.org.apache.commons.math.*;
-import peasy.org.apache.commons.math.geometry.*;
+// PostFX shader-chaining library
+// https://github.com/cansik/processing-postfx
+import ch.bildspur.postfx.builder.*;
+import ch.bildspur.postfx.pass.*;
+import ch.bildspur.postfx.*;
 
 // ControlP5 GUI library
 // https://github.com/sojamo/controlp5
@@ -17,9 +18,9 @@ VBOGrid vboGrid;
 
 ControlP5 cp5;
 
-PeasyCam pcam;
+PostFX fx;
 
-PGraphics canvas;
+PGraphics world;
 
 float extrude;
 
@@ -30,24 +31,17 @@ void setup() {
     cam.start();
     camFrame = createGraphics(640, 480, P3D);
 
-    canvas = createGraphics(width, height, P3D);
+    world = createGraphics(width, height, P3D);
 
-    vboGrid = new VBOGrid(400, 300, 800, 600, "POINTS", "customFrag.glsl", "customVert.glsl");
+    vboGrid = new VBOGrid(200, 200, 800, 600, "LINES", "customFrag.glsl", "customVert.glsl");
     vboGrid.setShaderUniformBoolean("flipY", true);
     vboGrid.setShaderUniformTexture("fragtex", camFrame);
     vboGrid.setShaderUniformTexture("verttex", camFrame);
-
+    
     cp5 = new ControlP5(this);
-    cp5.addSlider("extrude")
-        .setPosition(20, 20)
-        .setSize(100, 20)
-        .setRange(0.0, 800.0)
-        .setValue(300.0)
-        .setLabel("Z-Extrude Amount");
-
-    /*pcam = new PeasyCam(this, 500);
-    pcam.setMinimumDistance(50);
-    pcam.setMaximumDistance(500);*/
+    setupGUI();
+    
+    fx = new PostFX(this);
 }
 
 void draw() {
@@ -66,6 +60,27 @@ void draw() {
     camFrame.updatePixels();
 
     vboGrid.setShaderUniformFloat("extrude", extrude);
-
+    
+    world.beginDraw();
+    
     vboGrid.draw();
+    
+    world.endDraw();
+    
+    image(world, 0, 0);
+    
+    // Apply passes
+    blendMode(BLEND);
+    fx.render()
+      .bloom(0.5, 20, 40)
+      .compose();
+}
+
+void setupGUI() {
+    cp5.addSlider("extrude")
+        .setPosition(20, 20)
+        .setSize(100, 20)
+        .setRange(0.0, 800.0)
+        .setValue(300.0)
+        .setLabel("Z-Extrude Amount");
 }

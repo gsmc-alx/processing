@@ -47,6 +47,7 @@ PGraphics canvas;
 
 // GUI library
 ControlP5 cp5;
+color guiColor          = color(154, 154, 154);
 /* https://forum.processing.org/one/topic/how-to-change-slider-colors-in-controlp5.html
 color guiFGColor        = color(154, 154, 154);
 color guiBGColor        = color(97, 97, 97);
@@ -61,7 +62,7 @@ int feedbackColour;
 boolean runFX;
 
 void captureEvent(Capture video) {
-  video.read();
+    video.read();
 }
 
 //////////////////////////////////////////////////////
@@ -71,8 +72,6 @@ void captureEvent(Capture video) {
 //////////////////////////////////////////////////////
 
 void setup() {
-
-<<<<<<< Updated upstream
     size(640, 480, OPENGL);
 
     //////////////////
@@ -82,17 +81,15 @@ void setup() {
     String[] cameras = Capture.list();
 
     /*if (cameras.length == 0) {
-=======
-  size(1280, 720, P2D);
+    size(1280, 720, P2D);
 
-  //////////////////
-  // Init Capture //
-  //////////////////
+    //////////////////
+    // Init Capture //
+    //////////////////
 
-  String[] cameras = Capture.list();
+    String[] cameras = Capture.list();
 
   if (cameras.length == 0) {
->>>>>>> Stashed changes
     println("There are no cameras available for capture.");
     exit();
     } else {
@@ -104,7 +101,6 @@ void setup() {
     // element from the array returned by list():
     cam = new Capture(this, cameras[0]);
     cam.start();
-<<<<<<< Updated upstream
     }*/
 
     cam = new Capture(this, 640, 480);
@@ -120,86 +116,39 @@ void setup() {
     feedbackPass  = new FeedbackPass();
     conwayPass    = new ConwayPass();
 
+    camFrame = createGraphics(width, height, P2D);
+
     //////////////////
     // Add controls //
     //////////////////
 
     cp5 = new ControlP5(this);
-    cp5.addSlider("feedbackLevel")
-        .setPosition(controlsLeft, controlsTop)
+    cp5.addSlider("brushSize")
+        .setPosition(40, 40)
         .setSize(100, 20)
-        .setRange(0.0, 1.0)
-        .setValue(0.8)
-        .setLabel("Feedback Amount")
-        .setColorCaptionLabel(guiLabelColor);
+        .setRange(0.01, 0.05)
+        .setValue(0.025)
+        .setColorCaptionLabel(guiColor);
 
-    cp5.addSlider("feedbackSpread")
-        .setPosition(controlsLeft, controlsTop + 30)
+    cp5.addSlider("feedback")
+        .setPosition(40, 70)
         .setSize(100, 20)
-        .setRange(0.0, 1.0)
-        .setValue(1.0)
-        .setLabel("Feedback Colour-Spread")
-        .setColorCaptionLabel(guiLabelColor);
+        .setRange(0.0, 0.90)
+        .setValue(0.80)
+        .setColorCaptionLabel(guiColor);
 
-    cp5.addSlider("feedbackColour")
-        .setPosition(controlsLeft, controlsTop + 60)
+    cp5.addSlider("channelSpread")
+        .setPosition(40, 100)
         .setSize(100, 20)
-        .setRange(0, 5)
+        .setRange(0.00, 0.07)
         .setValue(0.0)
-        .setLabel("Feedback Colour Method")
-        .setColorCaptionLabel(guiLabelColor);
+        .setColorCaptionLabel(guiColor);
 
     cp5.addToggle("runFX")
-        .setPosition(controlsLeft, controlsTop + 90)
+        .setPosition(40, 130)
         .setSize(20, 20)
-        .setLabel("Run A-Life")
-        .setColorCaptionLabel(guiLabelColor)
+        .setColorCaptionLabel(guiColor)
         .setValue(false);
-=======
-  }
-
-  camFrame = createGraphics(width, height, P2D);
-
-  ///////////////////////
-  // PostFX pass stuff //
-  ///////////////////////
-
-  fx            = new PostFX(this);
-  feedbackPass  = new FeedbackPass();
-  conwayPass    = new ConwayPass();
-
-  //////////////////
-  // Add controls //
-  //////////////////
-
-  cp5 = new ControlP5(this);
-  cp5.addSlider("brushSize")
-    .setPosition(40, 40)
-    .setSize(100, 20)
-    .setRange(0.01, 0.05)
-    .setValue(0.025)
-    .setColorCaptionLabel(guiColor);
-
-  cp5.addSlider("feedback")
-    .setPosition(40, 70)
-    .setSize(100, 20)
-    .setRange(0.0, 0.90)
-    .setValue(0.80)
-    .setColorCaptionLabel(guiColor);
-
-  cp5.addSlider("channelSpread")
-    .setPosition(40, 100)
-    .setSize(100, 20)
-    .setRange(0.00, 0.07)
-    .setValue(0.0)
-    .setColorCaptionLabel(guiColor);
-
-   cp5.addToggle("runFX")
-     .setPosition(40, 130)
-     .setSize(20, 20)
-     .setColorCaptionLabel(guiColor)
-     .setValue(false);
->>>>>>> Stashed changes
 }
 
 //////////////////////////////////////////////////////
@@ -210,7 +159,6 @@ void setup() {
 
 void draw() {
 
-<<<<<<< Updated upstream
     // Update shader uniforms
     updateUniforms();
 
@@ -255,34 +203,29 @@ void updateUniforms() {
     feedbackPass.setFeedback(feedbackLevel);
     feedbackPass.setFeedbackSpread(feedbackSpread);
     feedbackPass.setFeedbackColour(feedbackColour);
-=======
-  // Set feedback level for feedback pass shader
-  feedbackPass.setFeedback(feedback);
-  feedbackPass.setChannelSpread(channelSpread);
 
-  conwayPass.setStartFX(runFX);
-  conwayPass.setMouse(map(mouseX, 0, width, 0, 1), map(mouseY, 0, height, 1, 0));
-  conwayPass.setBrushSize(brushSize);
+    conwayPass.setStartFX(runFX);
+    //conwayPass.setMouse(map(mouseX, 0, width, 0, 1), map(mouseY, 0, height, 1, 0));
+    //conwayPass.setBrushSize(brushSize);
 
-  if (cam.available() == true) {
-    cam.read();
-  }
+    if (cam.available() == true) {
+        cam.read();
+    }
 
-  // Copy capture pixels to PGraphics instance
-  cam.loadPixels();
-  camFrame.loadPixels();
-  arrayCopy(cam.pixels, camFrame.pixels);
-  cam.updatePixels();
-  camFrame.updatePixels();
+    // Copy capture pixels to PGraphics instance
+    cam.loadPixels();
+    camFrame.loadPixels();
+    arrayCopy(cam.pixels, camFrame.pixels);
+    cam.updatePixels();
+    camFrame.updatePixels();
 
-  image(camFrame, 0, 0);
+    image(camFrame, 0, 0);
 
-  // Apply passes
-  blendMode(BLEND);
-  fx.render()
-    .custom(conwayPass)
-    .custom(feedbackPass)
-    //.bloom(0.5, 20, 40)
-    .compose();
->>>>>>> Stashed changes
+    // Apply passes
+    blendMode(BLEND);
+    fx.render()
+        //.custom(conwayPass)
+        //.custom(feedbackPass)
+        //.bloom(0.5, 20, 40)
+        .compose();
 }

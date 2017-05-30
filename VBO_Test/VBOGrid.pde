@@ -82,7 +82,6 @@ class VBOGrid
 
     // Arguments:
     // Vertices X | Vertices Y | Pixels Wide | Pixels High | Draw Mode (some not yet implemented) | Fragment Shader (optional) | Vertex Shader (optional)
-
     public VBOGrid(int vX, int vY, int pW, int pH, String mode, String fragS, String vertS)
     {
         vertsX = vX;
@@ -177,7 +176,7 @@ class VBOGrid
 
         background(0);
 
-        blendMode(BLEND);
+        blendMode(ADD);
 
         switch (drawMode) {
             case "POINTS" :
@@ -225,8 +224,11 @@ class VBOGrid
         int i = 0;
         int x = 0;
         int y = 0;
-
-        // Vertex positions
+        
+        //////////////////////
+        // Vertex Positions //
+        //////////////////////
+        
         for(y = 0; y < vertsY; y++)
         {
             for(x = 0; x < vertsX; x++)
@@ -247,8 +249,11 @@ class VBOGrid
                 i += 4;
             }
         }
-
+        
+        /////////////////////////
         // Texture Coordinates //
+        /////////////////////////
+        
         i = 0;
         for(y = 0; y < vertsY; y++)
         {
@@ -305,6 +310,10 @@ class VBOGrid
                 }
             }
         }
+        
+        ///////////////////
+        // Update Arrays //
+        ///////////////////
 
         posBuffer.rewind();
         posBuffer.put(positions);
