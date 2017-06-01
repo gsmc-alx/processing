@@ -224,16 +224,15 @@ class VBOGrid
         int i = 0;
         int x = 0;
         int y = 0;
-        
+
         //////////////////////
         // Vertex Positions //
         //////////////////////
-        
+
         for(y = 0; y < vertsY; y++)
         {
             for(x = 0; x < vertsX; x++)
             {
-
                  // Vertex positions
                 positions[i    ] = ((pxWidth / vertsX) * x) - (0.5 * pxWidth);
                 positions[i + 1] = ((pxHeight / vertsY) * y) - (0.5 * pxHeight);
@@ -249,11 +248,11 @@ class VBOGrid
                 i += 4;
             }
         }
-        
+
         /////////////////////////
         // Texture Coordinates //
         /////////////////////////
-        
+
         i = 0;
         for(y = 0; y < vertsY; y++)
         {
@@ -275,7 +274,9 @@ class VBOGrid
         https://github.com/v002/v002-Rutt-Etra/blob/master/v002RuttEtraPlugIn.m
         */
 
-        if (drawMode == "LINES")
+        String mode = drawMode;
+
+        if (mode == "LINES")
         {
         // Just for LINES mode
             i = 0;
@@ -310,7 +311,7 @@ class VBOGrid
                 }
             }
         }
-        
+
         ///////////////////
         // Update Arrays //
         ///////////////////
@@ -344,6 +345,11 @@ class VBOGrid
     IntBuffer allocateDirectIntBuffer(int n)
     {
       return ByteBuffer.allocateDirect(n * Integer.BYTES).order(ByteOrder.nativeOrder()).asIntBuffer();
+    }
+
+    void setVBODrawMode(String mode)
+    {
+        drawMode = mode;
     }
 
     /////////////////////////

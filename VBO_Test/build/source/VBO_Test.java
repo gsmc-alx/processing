@@ -8,6 +8,7 @@ import ch.bildspur.postfx.builder.*;
 import ch.bildspur.postfx.pass.*; 
 import ch.bildspur.postfx.*; 
 import controlP5.*; 
+import java.util.*; 
 import java.nio.ByteBuffer; 
 import java.nio.ByteOrder; 
 import java.nio.FloatBuffer; 
@@ -39,6 +40,7 @@ public class VBO_Test extends PApplet {
 // https://github.com/sojamo/controlp5
 
 
+
 Capture cam;
 PGraphics camFrame;
 
@@ -61,7 +63,9 @@ PGraphics world;
 
 boolean runFX;
 
+// VBO Settings
 float extrude;
+String VBODrawMode;
 
 public void setup() {
     
@@ -72,7 +76,7 @@ public void setup() {
 
     world = createGraphics(width, height, P3D);
 
-    vboGrid = new VBOGrid(200, 200, 800, 600, "POINTS", "customFrag.glsl", "customVert.glsl");
+    vboGrid = new VBOGrid(200, 200, 800, 600, "LINES", "customFrag.glsl", "customVert.glsl");
     vboGrid.setShaderUniformBoolean("flipY", true);
     vboGrid.setShaderUniformTexture("fragtex", camFrame);
     vboGrid.setShaderUniformTexture("verttex", camFrame);
@@ -124,34 +128,47 @@ public void draw() {
 
 public void setupGUI() {
     cp5.addSlider("extrude")
-        .setPosition(20, 40)
+        .setPosition(20, 20)
         .setSize(100, 20)
         .setRange(0.0f, 800.0f)
         .setValue(300.0f)
         .setLabel("Z-Extrude Amount");
 
     cp5.addSlider("feedbackLevel")
-        .setPosition(20, 70)
+        .setPosition(20, 50)
         .setSize(100, 20)
         .setRange(0.0f, 1.0f)
         .setValue(0.80f);
 
     cp5.addSlider("feedbackSpread")
-        .setPosition(20, 100)
+        .setPosition(20, 80)
         .setSize(100, 20)
         .setRange(0.0f, 1.0f)
         .setValue(0.0f);
 
     cp5.addSlider("feedbackColour")
-        .setPosition(20, 130)
+        .setPosition(20, 110)
         .setSize(100, 20)
         .setRange(0, 5)
         .setValue(0.0f);
 
     cp5.addToggle("runFX")
-        .setPosition(20, 160)
+        .setPosition(100, 140)
         .setSize(20, 20)
         .setValue(false);
+
+    List l = Arrays.asList("POINTS", "LINES", "SOLID");
+    cp5.addScrollableList("dropdown")
+        .setPosition(20, 140)
+        .setSize(70, 100)
+        .setBarHeight(20)
+        .setItemHeight(20)
+        .addItems(l)
+        .setType(ScrollableList.DROPDOWN);
+}
+
+public void dropdown(int n) {
+    vboGrid.setVBODrawMode((String)cp5.get(ScrollableList.class, "dropdown").getItem(n).get("name"));
 }
 
 public void updatePassSettings()
@@ -591,16 +608,15 @@ class VBOGrid
         int i = 0;
         int x = 0;
         int y = 0;
-        
+
         //////////////////////
         // Vertex Positions //
         //////////////////////
-        
+
         for(y = 0; y < vertsY; y++)
         {
             for(x = 0; x < vertsX; x++)
             {
-
                  // Vertex positions
                 positions[i    ] = ((pxWidth / vertsX) * x) - (0.5f * pxWidth);
                 positions[i + 1] = ((pxHeight / vertsY) * y) - (0.5f * pxHeight);
@@ -616,11 +632,11 @@ class VBOGrid
                 i += 4;
             }
         }
-        
+
         /////////////////////////
         // Texture Coordinates //
         /////////////////////////
-        
+
         i = 0;
         for(y = 0; y < vertsY; y++)
         {
@@ -642,7 +658,9 @@ class VBOGrid
         https://github.com/v002/v002-Rutt-Etra/blob/master/v002RuttEtraPlugIn.m
         */
 
-        if (drawMode == "LINES")
+        String mode = drawMode;
+
+        if (mode == "LINES")
         {
         // Just for LINES mode
             i = 0;
@@ -677,7 +695,7 @@ class VBOGrid
                 }
             }
         }
-        
+
         ///////////////////
         // Update Arrays //
         ///////////////////
@@ -711,6 +729,11 @@ class VBOGrid
     public IntBuffer allocateDirectIntBuffer(int n)
     {
       return ByteBuffer.allocateDirect(n * Integer.BYTES).order(ByteOrder.nativeOrder()).asIntBuffer();
+    }
+
+    public void setVBODrawMode(String mode)
+    {
+        drawMode = mode;
     }
 
     /////////////////////////

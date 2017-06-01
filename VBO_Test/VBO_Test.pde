@@ -10,6 +10,7 @@ import ch.bildspur.postfx.*;
 // ControlP5 GUI library
 // https://github.com/sojamo/controlp5
 import controlP5.*;
+import java.util.*;
 
 Capture cam;
 PGraphics camFrame;
@@ -33,7 +34,9 @@ PGraphics world;
 
 boolean runFX;
 
+// VBO Settings
 float extrude;
+String VBODrawMode;
 
 void setup() {
     size(800, 600, P3D);
@@ -44,7 +47,7 @@ void setup() {
 
     world = createGraphics(width, height, P3D);
 
-    vboGrid = new VBOGrid(200, 200, 800, 600, "POINTS", "customFrag.glsl", "customVert.glsl");
+    vboGrid = new VBOGrid(200, 200, 800, 600, "LINES", "customFrag.glsl", "customVert.glsl");
     vboGrid.setShaderUniformBoolean("flipY", true);
     vboGrid.setShaderUniformTexture("fragtex", camFrame);
     vboGrid.setShaderUniformTexture("verttex", camFrame);
@@ -96,34 +99,47 @@ void draw() {
 
 void setupGUI() {
     cp5.addSlider("extrude")
-        .setPosition(20, 40)
+        .setPosition(20, 20)
         .setSize(100, 20)
         .setRange(0.0, 800.0)
         .setValue(300.0)
         .setLabel("Z-Extrude Amount");
 
     cp5.addSlider("feedbackLevel")
-        .setPosition(20, 70)
+        .setPosition(20, 50)
         .setSize(100, 20)
         .setRange(0.0, 1.0)
         .setValue(0.80);
 
     cp5.addSlider("feedbackSpread")
-        .setPosition(20, 100)
+        .setPosition(20, 80)
         .setSize(100, 20)
         .setRange(0.0, 1.0)
         .setValue(0.0);
 
     cp5.addSlider("feedbackColour")
-        .setPosition(20, 130)
+        .setPosition(20, 110)
         .setSize(100, 20)
         .setRange(0, 5)
         .setValue(0.0);
 
     cp5.addToggle("runFX")
-        .setPosition(20, 160)
+        .setPosition(100, 140)
         .setSize(20, 20)
         .setValue(false);
+
+    List l = Arrays.asList("POINTS", "LINES", "SOLID");
+    cp5.addScrollableList("dropdown")
+        .setPosition(20, 140)
+        .setSize(70, 100)
+        .setBarHeight(20)
+        .setItemHeight(20)
+        .addItems(l)
+        .setType(ScrollableList.DROPDOWN);
+}
+
+void dropdown(int n) {
+    vboGrid.setVBODrawMode((String)cp5.get(ScrollableList.class, "dropdown").getItem(n).get("name"));
 }
 
 void updatePassSettings()
