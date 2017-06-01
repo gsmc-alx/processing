@@ -110,6 +110,6 @@ class FeedbackPass implements Pass
     public void setFeedbackColour(int index)
     {
         // Range 0 > 5
-        this.channelSpreadShuffle = min(index, 5);
+        this.channelSpreadShuffle = max(min(index, 5), 0);
     }
 }

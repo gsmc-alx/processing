@@ -8,7 +8,6 @@ precision mediump int;
 uniform sampler2D texture;
 uniform sampler2D previoustexture;
 uniform vec4 feedback;
-uniform int spreadshuffle;
 
 varying vec4 vertTexCoord;
 

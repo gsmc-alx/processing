@@ -43,9 +43,7 @@ PostFX fx;
 FeedbackPass feedbackPass;
 ConwayPass conwayPass;
 
-PGraphics canvas;
-
-// GUI library
+// GUI library and options
 ControlP5 cp5;
 color guiColor          = color(154, 154, 154);
 /* https://forum.processing.org/one/topic/how-to-change-slider-colors-in-controlp5.html
@@ -56,9 +54,12 @@ color guiLabelColor     = color(200,200,200);
 int controlsTop         = 20;
 int controlsLeft        = 20;
 
+// Feedback shader setting variables
 float feedbackLevel;
 float feedbackSpread;
 int feedbackColour;
+
+// Conway shader setting variables
 boolean runFX;
 
 void captureEvent(Capture video) {
@@ -79,6 +80,7 @@ void setup() {
     //////////////////
 
     String[] cameras = Capture.list();
+    camFrame = createGraphics(width, height);
 
     /*if (cameras.length == 0) {
     size(1280, 720, P2D);
@@ -105,7 +107,6 @@ void setup() {
 
     cam = new Capture(this, 640, 480);
     cam.start();
-    camFrame = createGraphics(640, 480, P3D);
 
     ///////////////////////
     // PostFX pass stuff //
@@ -116,36 +117,41 @@ void setup() {
     feedbackPass  = new FeedbackPass();
     conwayPass    = new ConwayPass();
 
-    camFrame = createGraphics(width, height, P2D);
-
     //////////////////
     // Add controls //
     //////////////////
 
     cp5 = new ControlP5(this);
-    cp5.addSlider("brushSize")
+    /*cp5.addSlider("brushSize")
         .setPosition(40, 40)
         .setSize(100, 20)
         .setRange(0.01, 0.05)
         .setValue(0.025)
-        .setColorCaptionLabel(guiColor);
+        .setColorCaptionLabel(guiColor);*/
 
-    cp5.addSlider("feedback")
+    cp5.addSlider("feedbackLevel")
         .setPosition(40, 70)
         .setSize(100, 20)
-        .setRange(0.0, 0.90)
+        .setRange(0.0, 1.0)
         .setValue(0.80)
         .setColorCaptionLabel(guiColor);
 
-    cp5.addSlider("channelSpread")
+    cp5.addSlider("feedbackSpread")
         .setPosition(40, 100)
         .setSize(100, 20)
-        .setRange(0.00, 0.07)
+        .setRange(0.0, 1.0)
+        .setValue(0.0)
+        .setColorCaptionLabel(guiColor);
+
+    cp5.addSlider("feedbackColour")
+        .setPosition(40, 130)
+        .setSize(100, 20)
+        .setRange(0, 5)
         .setValue(0.0)
         .setColorCaptionLabel(guiColor);
 
     cp5.addToggle("runFX")
-        .setPosition(40, 130)
+        .setPosition(40, 160)
         .setSize(20, 20)
         .setColorCaptionLabel(guiColor)
         .setValue(false);
@@ -167,12 +173,9 @@ void draw() {
         cam.read();
     }
 
-    // Copy capture pixels to PGraphics instance
-    cam.loadPixels();
-    camFrame.loadPixels();
-    arrayCopy(cam.pixels, camFrame.pixels);
-    cam.updatePixels();
-    camFrame.updatePixels();
+    camFrame.beginDraw();
+    image(cam, 0, 0);
+    camFrame.endDraw();
 
     image(camFrame, 0, 0);
 
@@ -203,29 +206,4 @@ void updateUniforms() {
     feedbackPass.setFeedback(feedbackLevel);
     feedbackPass.setFeedbackSpread(feedbackSpread);
     feedbackPass.setFeedbackColour(feedbackColour);
-
-    conwayPass.setStartFX(runFX);
-    //conwayPass.setMouse(map(mouseX, 0, width, 0, 1), map(mouseY, 0, height, 1, 0));
-    //conwayPass.setBrushSize(brushSize);
-
-    if (cam.available() == true) {
-        cam.read();
-    }
-
-    // Copy capture pixels to PGraphics instance
-    cam.loadPixels();
-    camFrame.loadPixels();
-    arrayCopy(cam.pixels, camFrame.pixels);
-    cam.updatePixels();
-    camFrame.updatePixels();
-
-    image(camFrame, 0, 0);
-
-    // Apply passes
-    blendMode(BLEND);
-    fx.render()
-        //.custom(conwayPass)
-        //.custom(feedbackPass)
-        //.bloom(0.5, 20, 40)
-        .compose();
 }

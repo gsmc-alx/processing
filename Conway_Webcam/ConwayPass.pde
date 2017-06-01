@@ -26,7 +26,7 @@ class ConwayPass implements Pass
     public ConwayPass()
     {
         shader = loadShader("conwayPass.glsl");
-        previousTexture = createGraphics(width, height, P3D);
+        previousTexture = createGraphics(width, height, P2D);
     }
 
     @Override
