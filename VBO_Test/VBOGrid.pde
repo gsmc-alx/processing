@@ -87,21 +87,20 @@ class VBOGrid
         vertsX = vX;
         vertsY = vY;
 
-        vBufferLength = vertsX * vertsY * 4;
-        iBufferLength = (vertsX - 1) * (vertsY - 1) * 6;
-        tBufferLength = vertsX * vertsY * 2;
-
         pxWidth = pW;
         pxHeight = pH;
 
         // Possible values: POINTS, LINES, GRID, WIREFRAME, SOLID
-        // Defaults to SOLID
         drawMode = mode;
 
         vertexShader = (vertS == null) ? "vertDefault.glsl" : vertS;
         fragmentShader = (fragS == null) ? "fragDefault.glsl" : fragS;
 
         shader = loadShader(fragmentShader, vertexShader);
+
+        vBufferLength = vertsX * vertsY * 4;
+        iBufferLength = (vertsX - 1) * (vertsY - 1) * 6;
+        tBufferLength = vertsX * vertsY * 2;
 
         positions    = new float[vBufferLength];
         colors       = new float[vBufferLength];
@@ -146,12 +145,13 @@ class VBOGrid
         // as long as the uniforms in the shader have the right names.
         translate(width/2, height/2);
 
-        updateGeometry();
-
         pgl = (PJOGL) beginPGL();
         gl = pgl.gl.getGL2ES2();
 
+        updateGeometry();
+
         shader.bind();
+        
         gl.glEnableVertexAttribArray(posLoc);
         gl.glEnableVertexAttribArray(colorLoc);
 
@@ -170,17 +170,19 @@ class VBOGrid
 
         gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
 
-        // Draw the triangle elements
         gl.glBindBuffer(PGL.ELEMENT_ARRAY_BUFFER, indexVboId);
         pgl.bufferData(PGL.ELEMENT_ARRAY_BUFFER, Integer.BYTES * indices.length, indexBuffer, GL.GL_DYNAMIC_DRAW);
 
         background(0);
 
+        ///////////////////
+        // Draw Elements //
+        ///////////////////
+
         blendMode(ADD);
 
         switch (drawMode) {
             case "POINTS" :
-
                 gl.glDrawElements(PGL.POINTS, indices.length, GL.GL_UNSIGNED_INT, 0);
                 break;
             case "LINES" :
@@ -208,6 +210,10 @@ class VBOGrid
         shader.unbind();
 
         endPGL();
+
+        /////////////////////////
+        // Reset Draw-Position //
+        /////////////////////////
 
         translate(-width/2, -height/2);
     }
@@ -334,7 +340,7 @@ class VBOGrid
     }
 
     //////////////////////
-    // Allocate buffers //
+    // Allocate Buffers //
     //////////////////////
 
     FloatBuffer allocateDirectFloatBuffer(int n)
@@ -347,13 +353,9 @@ class VBOGrid
       return ByteBuffer.allocateDirect(n * Integer.BYTES).order(ByteOrder.nativeOrder()).asIntBuffer();
     }
 
-    void setVBODrawMode(String mode)
-    {
-        drawMode = mode;
-    }
 
     /////////////////////////
-    // Set shader uniforms //
+    // Set Shader Uniforms //
     /////////////////////////
 
     void setShaderUniformInt(String name, int val) {
@@ -371,5 +373,14 @@ class VBOGrid
 
     void setShaderUniformTexture(String name, PGraphics tex) {
         shader.set(name, tex);
+    }
+
+    ///////////////////
+    // Grid Settings //
+    ///////////////////
+
+    void setVBODrawMode(String mode)
+    {
+        drawMode = mode;
     }
 }
