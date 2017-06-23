@@ -65,6 +65,7 @@ class VBOGrid
     int iBufferLength;
     int pxWidth;
     int pxHeight;
+
     String drawMode;
     String vertexShader;
     String fragmentShader;
@@ -84,50 +85,50 @@ class VBOGrid
     // Vertices X | Vertices Y | Pixels Wide | Pixels High | Draw Mode (some not yet implemented) | Fragment Shader (optional) | Vertex Shader (optional)
     public VBOGrid(int vX, int vY, int pW, int pH, String mode, String fragS, String vertS)
     {
-        vertsX = vX;
-        vertsY = vY;
+        vertsX              = vX;
+        vertsY              = vY;
 
-        pxWidth = pW;
-        pxHeight = pH;
+        pxWidth             = pW;
+        pxHeight            = pH;
 
         // Possible values: POINTS, LINES, GRID, WIREFRAME, SOLID
-        drawMode = mode;
+        drawMode            = mode;
 
-        vertexShader = (vertS == null) ? "vertDefault.glsl" : vertS;
-        fragmentShader = (fragS == null) ? "fragDefault.glsl" : fragS;
+        vertexShader        = (vertS == null) ? "vertDefault.glsl" : vertS;
+        fragmentShader      = (fragS == null) ? "fragDefault.glsl" : fragS;
 
-        shader = loadShader(fragmentShader, vertexShader);
+        shader              = loadShader(fragmentShader, vertexShader);
 
-        vBufferLength = vertsX * vertsY * 4;
-        iBufferLength = (vertsX - 1) * (vertsY - 1) * 6;
-        tBufferLength = vertsX * vertsY * 2;
+        vBufferLength       = vertsX * vertsY * 4;
+        iBufferLength       = (vertsX - 1) * (vertsY - 1) * 6;
+        tBufferLength       = vertsX * vertsY * 2;
 
-        positions    = new float[vBufferLength];
-        colors       = new float[vBufferLength];
-        texCoords    = new float[tBufferLength];
-        indices      = new int[iBufferLength];
+        positions           = new float[vBufferLength];
+        colors              = new float[vBufferLength];
+        texCoords           = new float[tBufferLength];
+        indices             = new int[iBufferLength];
 
-        posBuffer = allocateDirectFloatBuffer(positions.length);
-        colorBuffer = allocateDirectFloatBuffer(colors.length);
-        texCoordBuffer = allocateDirectFloatBuffer(texCoords.length);
-        indexBuffer = allocateDirectIntBuffer(indices.length);
+        posBuffer           = allocateDirectFloatBuffer(positions.length);
+        colorBuffer         = allocateDirectFloatBuffer(colors.length);
+        texCoordBuffer      = allocateDirectFloatBuffer(texCoords.length);
+        indexBuffer         = allocateDirectIntBuffer(indices.length);
 
-        pgl = (PJOGL) beginPGL();
-        gl = pgl.gl.getGL2ES2();
+        pgl                 = (PJOGL) beginPGL();
+        gl                  = pgl.gl.getGL2ES2();
 
         // Get GL ids for all the buffers
         IntBuffer intBuffer = IntBuffer.allocate(4);
         gl.glGenBuffers(4, intBuffer);
-        posVboId = intBuffer.get(0);
-        colorVboId = intBuffer.get(1);
-        texCoordVboId = intBuffer.get(2);
-        indexVboId = intBuffer.get(3);
+        posVboId            = intBuffer.get(0);
+        colorVboId          = intBuffer.get(1);
+        texCoordVboId       = intBuffer.get(2);
+        indexVboId          = intBuffer.get(3);
 
         // Get the location of the attribute variables.
         shader.bind();
-        posLoc = gl.glGetAttribLocation(shader.glProgram, "position");
-        colorLoc = gl.glGetAttribLocation(shader.glProgram, "color");
-        texCoordLoc = gl.glGetAttribLocation(shader.glProgram, "texCoord");
+        posLoc              = gl.glGetAttribLocation(shader.glProgram, "position");
+        colorLoc            = gl.glGetAttribLocation(shader.glProgram, "color");
+        texCoordLoc         = gl.glGetAttribLocation(shader.glProgram, "texCoord");
         shader.unbind();
 
         endPGL();
@@ -145,13 +146,13 @@ class VBOGrid
         // as long as the uniforms in the shader have the right names.
         translate(width/2, height/2);
 
+        updateGeometry();
+
         pgl = (PJOGL) beginPGL();
         gl = pgl.gl.getGL2ES2();
 
-        updateGeometry();
-
         shader.bind();
-        
+
         gl.glEnableVertexAttribArray(posLoc);
         gl.glEnableVertexAttribArray(colorLoc);
 

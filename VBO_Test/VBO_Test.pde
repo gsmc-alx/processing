@@ -47,7 +47,7 @@ void setup() {
 
     world = createGraphics(width, height, P3D);
 
-    vboGrid = new VBOGrid(200, 200, 800, 600, "LINES", "customFrag.glsl", "customVert.glsl");
+    vboGrid = new VBOGrid(200, 120, 800, 600, "LINES", "customFrag.glsl", "customVert.glsl");
     vboGrid.setShaderUniformBoolean("flipY", true);
     vboGrid.setShaderUniformTexture("fragtex", camFrame);
     vboGrid.setShaderUniformTexture("verttex", camFrame);

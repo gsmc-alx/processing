@@ -76,7 +76,7 @@ public void setup() {
 
     world = createGraphics(width, height, P3D);
 
-    vboGrid = new VBOGrid(200, 200, 800, 600, "LINES", "customFrag.glsl", "customVert.glsl");
+    vboGrid = new VBOGrid(200, 120, 800, 600, "LINES", "customFrag.glsl", "customVert.glsl");
     vboGrid.setShaderUniformBoolean("flipY", true);
     vboGrid.setShaderUniformTexture("fragtex", camFrame);
     vboGrid.setShaderUniformTexture("verttex", camFrame);
@@ -449,6 +449,7 @@ class VBOGrid
     int iBufferLength;
     int pxWidth;
     int pxHeight;
+
     String drawMode;
     String vertexShader;
     String fragmentShader;
@@ -532,9 +533,8 @@ class VBOGrid
         pgl = (PJOGL) beginPGL();
         gl = pgl.gl.getGL2ES2();
 
-        updateGeometry();
-
         shader.bind();
+
         gl.glEnableVertexAttribArray(posLoc);
         gl.glEnableVertexAttribArray(colorLoc);
 
@@ -599,6 +599,8 @@ class VBOGrid
         /////////////////////////
 
         translate(-width/2, -height/2);
+
+        updateGeometry();
     }
 
     //////////////////////////////////////////////////
